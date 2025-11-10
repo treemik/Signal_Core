@@ -1,6 +1,6 @@
 import argparse
 from helper_functions import init_db, DatabaseContextManager
-from services import add_calendar_item, list_calendar_items
+from services import add_calendar_item, list_calendar_items, add_task, update_task
 
 parser = argparse.ArgumentParser(description='A cli based lifer tracking system centered around a calendar')
 subparsers=parser.add_subparsers(dest='command')
@@ -14,7 +14,21 @@ add_parser.add_argument('-p','--priority',required=True,type=int,choices=[0,1,2,
 add_parser.add_argument('-b','--begins',required=True,type=int,help='the beginning of the time range (inclusive)')
 add_parser.add_argument('-e','--ends',required=True,type=int,help='the end of the time range (inclusive)')
 # need to create a better type for the begins and ends argument one that enforces date and time using a datetime object
+
 add_parser=subparsers.add_parser("list_calendar_items",help="List all calendar items in a database")
+# Need to add filters to this so it's not just a search all
+
+add_parser=subparsers.add_parser("add_task",help="Add a task")
+add_parser.add_argument('-t','--title',required=True,help="The title of the task")
+add_parser.add_argument('-n','--note',help = 'The note of the task')
+add_parser.add_argument('-d','--due',required=True,type=int,help='The due date of the task')
+add_parser.add_argument('-p','--priority',required=True,type=int,choices=[0,1,2,3],help='The priority of the task (must be 0, 1, 2, 3)')
+
+add_parser=subparsers.add_parser("update_task",help="Update a task")
+add_parser.add_argument('--id',required=True,help='The id of the task')
+add_parser.add_argument('-s','--status', choices=['open','done','blocked'], help='The updated status of the task (must be open, done, blocked)')
+add_parser.add_argument('-p','--priority',help='The updated priority of the task')
+
 
 args = parser.parse_args()
 init_db()
@@ -23,7 +37,7 @@ if args.command == 'add_calendar_item':
     with DatabaseContextManager("signal_core.db") as conn:
         add_calendar_item(conn,starts_at=args.begins,ends_at=args.ends,title=args.title,kind=args.kind,status=args.status,priority=args.priority)
 
-if args.command == 'list_calendar_items':
+elif args.command == 'list_calendar_items':
     with DatabaseContextManager("signal_core.db") as conn:
         results= list_calendar_items(conn)
         my_string="--All calendar items--"
@@ -42,5 +56,53 @@ if args.command == 'list_calendar_items':
            priority = result['priority']
            created_at = result['created_at']
            updated_at = result['updated_at']
+
            print (f"{calender_id:<4} | {title[:10]:<10} | {kind:<11} | {status:<9} | {priority:<8} | {created_at[:10]:<10} | {updated_at}")
 
+elif args.command == 'add_task':
+    with DatabaseContextManager("signal_core.db") as conn:
+        results=add_task(conn,title=args.title,note=args.note,due=args.due,priority=args.priority)
+        task_id=results['task_id']
+        title=results['title']
+        title_length=len(title)
+        task_id_length=len(str(task_id))
+        string_length=title_length+task_id_length+49
+        print('-'*string_length)
+        print (f"{'--Adding task successfully--':^{string_length}}")
+        print('-'*string_length)
+        print(f'The task {title} has been added to the database with id {task_id}')
+        print('-'*string_length)
+
+
+elif args.command == 'update_task':
+    with DatabaseContextManager("signal_core.db") as conn:
+        if not args.status and not args.priority:
+            parser.error("You must specify a status or priority or both")
+        results=update_task(conn,task_id=args.id,status=args.status,priority=args.priority)
+        if not results['ok']:
+            if results['error']=='NO_TASK':
+                print(f"The task with the id {args.id} does not exist")
+        if results['ok']:
+            task_id=results['task_id']
+            status=results['status']
+            priority=results['priority']
+            updated_at=results['updated_at']
+            original_status=results['original_status']
+            original_priority=results['original_priority']
+            title=results['title']
+            title_length=len(title)
+            task_id_length=len(str(task_id))
+            string=len("task  with the id  has been updated successfully.")
+            string_length=title_length+task_id_length+string
+
+            print('-'*string_length)
+            print (f"Task {title} with the id {task_id} has been updated successfully.")
+            print('-'*string_length)
+            if status is not None:
+                print(f"-Status updated from {original_status} to {status}")
+
+            if priority is not None:
+                print(f"-Priority updated from {original_priority} to {priority}")
+
+            print (f"-Updated {updated_at}")
+            print('-'*string_length)

@@ -1,2 +1,6 @@
 create 2 argparse types one that enforces a date entry dd-mm-yyyy and one that enforces a time entry hhmm (24hr time)
 add filters and sort to list calendar items
+sort out the results return on list calendar items
+add a return to add calendar items and a response to the user
+create an update calendar item
+create a search tasks argparse and function

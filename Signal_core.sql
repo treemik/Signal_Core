@@ -9,3 +9,14 @@ priority TEXT NOT NULL CHECK (priority in (0,1,2,3)),
 created_at TEXT NOT NULL,
 updated_at TEXT
 );
+CREATE TABLE IF NOT EXISTS  task(
+    id INTEGER PRIMARY KEY,
+    title TEXT NOT NULL,
+    notes TEXT,
+    status TEXT NOT NULL CHECK  (status in ('open','done','blocked')),
+    due_at TEXT NOT NULL,
+    priority TEXT NOT NULL CHECK (priority in (0,1,2,3)),
+    created_at TEXT NOT NULL,
+    updated_at TEXT,
+    completed_at TEXT
+);
