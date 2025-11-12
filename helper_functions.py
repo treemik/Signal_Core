@@ -62,3 +62,25 @@ def time_type(s: str):
     else:
         raise ValueError ("time format error (please use HH:MM 24hr format)")
     return time
+
+def split_by_length_and_preceding_space(string):
+    segments=[]
+    current_start=0
+    while current_start<len(string):
+        potential_length=current_start+80
+        split_point=0
+        if potential_length>len(string):
+            segments.append(string[current_start:])
+            break
+        if string[potential_length]==' ':
+            split_point=potential_length
+        else:
+            for i in range(potential_length-1,current_start,-1):
+                if string[i]==' ':
+                    split_point=i
+                    break
+        segments.append(string[current_start:split_point].strip())
+        current_start=split_point+1
+    return segments
+
+

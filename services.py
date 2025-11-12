@@ -1,4 +1,5 @@
-from datetime import datetime
+from datetime import datetime,timedelta
+from helper_functions import split_by_length_and_preceding_space
 
 
 
@@ -14,6 +15,8 @@ def add_calendar_item(conn,*,date_begins,date_ends,time_begins,time_ends,title,k
         time_begins=datetime.strptime('00:00','%H:%M')
     if time_begins and not time_ends:
         time_ends=datetime.strptime('23:59','%H:%M')
+    if time_ends < time_begins and date_begins==date_ends:
+        date_ends=date_begins+timedelta(days=1)
     date_begins=datetime.strftime(date_begins,'%Y-%m-%d')
     date_ends=datetime.strftime(date_ends,'%Y-%m-%d')
     time_begins=datetime.strftime(time_begins,'%H:%M')
@@ -101,3 +104,35 @@ def update_calendar_item(conn,*,item_id,status,priority):
             "UPDATE calendar_item SET priority=?,updated_at=? WHERE id=?",(priority,updated_at,item_id,)
         )
     return{'ok':True,'item_id':item_id,'status':status,'priority':priority,'updated_at':updated_at,'original_status':original_status,'original_priority':original_priority,'title':title}
+
+def journal_entry(conn,*,title,body):
+    cursor=conn.cursor()
+    created_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    body_list=split_by_length_and_preceding_space(body)
+    cursor.execute(
+        "INSERT INTO journal (title,created_at) VALUES(?,?)",
+        (title,created_at)
+    )
+    row=cursor.lastrowid
+    position=0
+    longest_string=0
+    for body in body_list:
+        if len(body)>longest_string:
+            longest_string=len(body)
+        cursor.execute(
+            "INSERT INTO journal_body (journal_id,body,position) VALUES(?,?,?)",
+            (row,body,position)
+        )
+        position+=1
+    return {'ok':True,'title':title,'body':body_list,'longest_string':longest_string,'created_at':created_at}
+
+
+def add_weight(conn,*,weight,skeletal_mass,body_fat,notes):
+    cursor=conn.cursor()
+    created_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    cursor.execute(
+        "INSERT INTO weight (weight,skeletal_mass,body_fat_percentage,notes,created_at)VALUES(?,?,?,?,?)",
+        (weight,skeletal_mass,body_fat,notes,created_at)
+    )
+    row=cursor.lastrowid
+    return {'task_id':row,'weight':weight,'skeletal_mass':skeletal_mass,'body_fat':body_fat,'notes':notes,'created_at':created_at}

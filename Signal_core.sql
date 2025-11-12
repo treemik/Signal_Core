@@ -22,3 +22,24 @@ CREATE TABLE IF NOT EXISTS  task(
     updated_at TEXT,
     completed_at TEXT
 );
+CREATE TABLE IF NOT EXISTS journal(
+    id INTEGER PRIMARY KEY,
+    title TEXT NOT NULL,
+    created_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS journal_body(
+    id INTEGER PRIMARY KEY,
+    journal_id INTEGER NOT NULL,
+    body TEXT NOT NULL,
+    position INTEGER NOT NULL,
+    FOREIGN KEY (journal_id) REFERENCES journal (id)
+
+);
+CREATE TABLE IF NOT EXISTS weight(
+    id INTEGER PRIMARY KEY,
+    created_at TEXT NOT NULL,
+    weight TEXT NOT NULL,
+    skeletal_mass TEXT,
+    body_fat_percentage TEXT,
+    notes TEXT
+);

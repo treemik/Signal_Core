@@ -1,6 +1,6 @@
 import argparse
 from helper_functions import init_db, DatabaseContextManager, date_type, time_type
-from services import add_calendar_item, list_calendar_items, add_task, update_task,update_calendar_item
+from services import add_weight, add_calendar_item, list_calendar_items, add_task, update_task,update_calendar_item,journal_entry
 
 parser = argparse.ArgumentParser(description='A cli based lifer tracking system centered around a calendar')
 subparsers=parser.add_subparsers(dest='command')
@@ -35,6 +35,16 @@ add_parser=subparsers.add_parser("update_task",help="Update a task")
 add_parser.add_argument('--id',required=True,help='The id of the task')
 add_parser.add_argument('-s','--status', choices=['open','done','blocked'], help='The updated status of the task (must be open, done, blocked)')
 add_parser.add_argument('-p','--priority',help='The updated priority of the task')
+
+add_parser=subparsers.add_parser("journal_entry",help='create a new journal entry')
+add_parser.add_argument('-t','--title',required=True,help="The title of the journal entry")
+add_parser.add_argument('-b','--body',required=True,help="The body of the journal entry")
+
+add_parser=subparsers.add_parser("add_weight",help="add a weigh in")
+add_parser.add_argument('-w','--weight',required=True,type=str,help='the weight of the new weight')
+add_parser.add_argument("-s","--skeletal_mass",type=str,help='the skeletal mass of the new weight')
+add_parser.add_argument("-b","--body_fat_percentage",type=str,help="body fat as of weigh in ")
+add_parser.add_argument('-n','--notes',help='The notes of the new weight')
 
 
 args = parser.parse_args()
@@ -155,3 +165,40 @@ elif args.command == 'update_task':
 
             print (f"-Updated {updated_at}")
             print('-'*string_length)
+
+elif args.command=='journal_entry':
+    with DatabaseContextManager("signal_core.db") as conn:
+        results=journal_entry(conn,title=args.title,body=args.body)
+        print('-'*results['longest_string'])
+        print(f"{results['title']}{results['created_at']:>{results['longest_string']-len(results['title'])}}")
+        print('-'*results['longest_string'])
+        for line in results['body']:
+            print(line)
+        print('-'*results['longest_string'])
+
+elif args.command=="add_weight":
+    with DatabaseContextManager("signal_core.db") as conn:
+        results=add_weight(conn,weight=args.weight,skeletal_mass=args.skeletal_mass,body_fat=args.body_fat_percentage,notes=args.notes)
+        print_list=[]
+        weight_length=len(str(results['weight']))
+        weight_string=(f'{'Weight:'}{results['weight']:>{41-9}}kg')
+        print_list.append(weight_string)
+
+        if results['skeletal_mass'] is not None:
+            skeletal_mass_string=(f'{'Skeletal mass:'}{results['skeletal_mass']:>{41-16}}kg')
+            print_list.append(skeletal_mass_string)
+
+        if results['body_fat'] is not None:
+            body_fat_string=(f'Body fat percentage:{results['body_fat']:>{41-21}}%')
+            print_list.append(body_fat_string)
+
+        print('-'*41)
+        print('New weight successfully added to database')
+        print('-'*41)
+        for line in print_list:
+            print(line)
+        print('-'*41)
+        print(f'Created at:{results['created_at']:>{41-11}}')
+
+
+

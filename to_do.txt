@@ -4,6 +4,6 @@
 [x]add a return to add calendar items and a response to the user
 [X]create an update calendar item
 [ ]create a search tasks argparse and function
-[ ]wire up the date and time argparse types to there respective areas
-[ ]fix the create calendar item sql and arg parse to take in a start and end date and also a start and end time
+[x]wire up the date and time argparse types to there respective areas
+[x]fix the create calendar item sql and arg parse to take in a start and end date and also a start and end time
 [ ]add prompts to missing required information to increase usablity
