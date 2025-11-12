@@ -1,6 +1,9 @@
-create 2 argparse types one that enforces a date entry dd-mm-yyyy and one that enforces a time entry hhmm (24hr time)
-add filters and sort to list calendar items
-sort out the results return on list calendar items
-add a return to add calendar items and a response to the user
-create an update calendar item
-create a search tasks argparse and function
+[x]create 2 argparse types one that enforces a date entry dd-mm-yyyy and one that enforces a time entry hhmm (24hr time)
+[ ]add filters and sort to list calendar items
+[x]sort out the results return on list calendar items
+[x]add a return to add calendar items and a response to the user
+[X]create an update calendar item
+[ ]create a search tasks argparse and function
+[ ]wire up the date and time argparse types to there respective areas
+[ ]fix the create calendar item sql and arg parse to take in a start and end date and also a start and end time
+[ ]add prompts to missing required information to increase usablity

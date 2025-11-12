@@ -1,4 +1,6 @@
+import re
 import sqlite3
+from datetime import datetime
 
 
 def init_db():
@@ -34,3 +36,29 @@ class DatabaseContextManager:
             else:
                 self.conn.rollback()
             self.conn.close()
+#date type for argparse
+
+date_re=re.compile(r'^\d{2}-\d{2}-\d{4}$')
+def date_type(s: str):
+    s=s.strip().replace('/','-')
+    if date_re.match(s):
+        try:
+            date=datetime.strptime(s, '%d-%m-%Y')
+        except ValueError:
+            raise ValueError(f"{s} is not a valid date")
+
+    else:
+        raise ValueError ("date format error (please use DD-MM-YYYY format)")
+    return date
+
+time_re=re.compile(r'^\d{2}:\d{2}$')
+def time_type(s: str):
+    s=s.strip().replace('.',':').replace(' ',':')
+    if time_re.match(s):
+        try:
+            time=datetime.strptime(s, '%H:%M')
+        except ValueError:
+            raise ValueError(f"{s} is not a valid time")
+    else:
+        raise ValueError ("time format error (please use HH:MM 24hr format)")
+    return time
